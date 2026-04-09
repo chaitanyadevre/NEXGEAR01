@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexGear — Login & Register</title>
+  <style>
+    /* Aapka Premium CSS */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0a0f1e 0%, #0d1b35 50%, #071225 100%);
+      overflow-x: hidden;
+      color: #fff;
+    }
+    .bg-glow {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse at 20% 50%, rgba(30,130,255,0.18) 0%, transparent 55%);
+    }
+    .page { min-height: 100vh; display: flex; position: relative; z-index: 1; }
+    .left-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px; }
+    .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .brand-icon { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #1e82ff, #00c3ff); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .hero-title { font-size: 52px; font-weight: 800; line-height: 1.15; }
+    .hero-title span { background: linear-gradient(90deg, #1e82ff, #00c3ff); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    
+    .right-panel { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px; }
+    .form-card { width: 100%; max-width: 440px; background: rgba(10,15,30,0.72); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.09); border-radius: 24px; padding: 36px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+    
+    .tab-bar { display: flex; background: rgba(255,255,255,0.05); border-radius: 14px; padding: 5px; margin-bottom: 30px; }
+    .tab-btn { flex: 1; padding: 11px; border: none; cursor: pointer; border-radius: 10px; color: #6677aa; background: transparent; font-weight: 600; }
+    .tab-btn.active { background: linear-gradient(135deg, #1e82ff, #00c3ff); color: #fff; }
+    
+    .field { margin-bottom: 18px; }
+    .field-label { display: block; color: #8899bb; font-size: 11px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px; }
+    .field-input { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 14px; color: #fff; outline: none; }
+    
+    .submit-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #1e82ff, #00c3ff); border: none; border-radius: 14px; color: #fff; font-weight: 700; cursor: pointer; margin-top: 10px; }
+    .switch-mode { text-align: center; margin-top: 20px; font-size: 13px; color: #6677aa; }
+    .switch-link { color: #4499ff; cursor: pointer; font-weight: 600; }
+    
+    .name-field { display: none; }
+    .name-field.visible { display: block; }
+
+    /* Toast Notification */
+    .toast { position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; border-radius: 10px; display: none; z-index: 100; color: white; }
+    .toast.success { background: #1e82ff; }
+    .toast.error { background: #ef4444; }
+  </style>
+</head>
+<body>
+
+  <div class="bg-glow"></div>
+  <div class="page">
+    <div class="left-panel">
+      <div class="brand"><div class="brand-icon">⚡</div><span style="font-size:24px; font-weight:800;">NexGear</span></div>
+      <h1 class="hero-title">The Future of<br><span>Smart Devices</span></h1>
+    </div>
+
+    <div class="right-panel">
+      <div class="form-card" id="authContainer">
+        <div class="tab-bar">
+          <button class="tab-btn active" id="loginTab">Sign In</button>
+          <button class="tab-btn" id="registerTab">Sign Up</button>
+        </div>
+        
+        <h2 id="formTitle" style="margin-bottom: 10px;">Welcome back</h2>
+        
+        <form id="mainForm">
+          <div class="field name-field" id="nameField">
+            <label class="field-label">Full Name</label>
+            <input type="text" id="nameInput" class="field-input" placeholder="Your Name">
+          </div>
+          <div class="field">
+            <label class="field-label">Email Address</label>
+            <input type="email" id="emailInput" class="field-input" placeholder="you@example.com" required>
+          </div>
+          <div class="field">
+            <label class="field-label">Password</label>
+            <input type="password" id="passwordInput" class="field-input" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="submit-btn" id="submitBtn">Sign In</button>
+        </form>
+
+        <div class="switch-mode">
+          <span id="switchText">Don't have an account? </span>
+          <span class="switch-link" id="switchBtn">Sign up</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+    // --- PASTE YOUR CONFIG HERE ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbpBtADqdT9gCGDWHR3MeKmb9kRi2D6rM",
+      authDomain: "nexgear-login-a9909.firebaseapp.com",
+      projectId: "nexgear-login-a9909",
+      storageBucket: "nexgear-login-a9909.firebasestorage.app",
+      messagingSenderId: "841556963192",
+      appId: "1:841556963192:web:c7884c6897a9ba3a3ba28d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    let mode = 'login';
+
+    // UI Switching
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+    const nameField = document.getElementById('nameField');
+    const submitBtn = document.getElementById('submitBtn');
+    const switchBtn = document.getElementById('switchBtn');
+
+    function toggleMode(m) {
+      mode = m;
+      if (mode === 'login') {
+        loginTab.classList.add('active');
+        registerTab.classList.remove('active');
+        nameField.classList.remove('visible');
+        submitBtn.textContent = 'Sign In';
+        document.getElementById('formTitle').textContent = 'Welcome back';
+      } else {
+        registerTab.classList.add('active');
+        loginTab.classList.remove('active');
+        nameField.classList.add('visible');
+        submitBtn.textContent = 'Create Account';
+        document.getElementById('formTitle').textContent = 'Create account';
+      }
+    }
+
+    loginTab.onclick = () => toggleMode('login');
+    registerTab.onclick = () => toggleMode('register');
+    switchBtn.onclick = () => toggleMode(mode === 'login' ? 'register' : 'login');
+
+    // Form Submit logic
+    document.getElementById('mainForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('emailInput').value;
+      const password = document.getElementById('passwordInput').value;
+      const name = document.getElementById('nameInput').value;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Processing...';
+
+      try {
+        if (mode === 'register') {
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          await updateProfile(userCredential.user, { displayName: name });
+          showToast('Account Created! Redirecting...', 'success');
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+          showToast('Login Successful!', 'success');
+        }
+
+        // REDIRECTION HERE
+        setTimeout(() => {
+          window.location.href = "store.html"; 
+        }, 1500);
+
+      } catch (error) {
+        showToast(error.message, 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = mode === 'login' ? 'Sign In' : 'Create Account';
+      }
+    };
+
+    function showToast(msg, type) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = `toast ${type}`;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+  </script>
+</body>
+</html>

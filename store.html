@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>NexGear — Premium Smart Devices</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f1e; --bg2:#0d1b35; --card:rgba(10,15,35,0.85);
+  --border:rgba(255,255,255,0.08); --blue:#1e82ff; --cyan:#00c3ff;
+  --text:#c8d8f0; --muted:#556688; --green:#22c55e;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:linear-gradient(135deg,var(--bg) 0%,var(--bg2) 50%,#071225 100%);
+  min-height:100vh;color:var(--text);overflow-x:hidden}
+
+/* GLOW BG */
+.glow-bg{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 20% 30%,rgba(30,130,255,.12) 0%,transparent 55%),
+             radial-gradient(ellipse at 80% 70%,rgba(0,195,255,.08) 0%,transparent 50%)}
+
+/* NAVBAR */
+nav{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;
+  padding:14px 24px;background:rgba(8,12,28,.93);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:10px;margin-right:auto}
+.logo-icon{width:36px;height:36px;border-radius:10px;font-size:18px;font-weight:900;
+  background:linear-gradient(135deg,#1e82ff,#00c3ff);display:flex;align-items:center;justify-content:center}
+.logo-name{font-weight:900;font-size:18px;color:#fff;letter-spacing:-.5px}
+.logo-tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;
+  background:rgba(30,130,255,.2);color:#4499ff}
+.search-wrap{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:12px;
+  flex:1;max-width:320px;background:rgba(255,255,255,.06);border:1px solid var(--border)}
+.search-wrap input{background:transparent;border:none;outline:none;font-size:14px;
+  color:#fff;width:100%}
+.search-wrap input::placeholder{color:var(--muted)}
+.cart-btn{position:relative;display:flex;align-items:center;gap:8px;padding:9px 18px;
+  border-radius:12px;border:none;cursor:pointer;color:#fff;font-size:14px;font-weight:700;
+  background:linear-gradient(135deg,#1e82ff,#00c3ff);
+  box-shadow:0 4px 16px rgba(30,130,255,.4);transition:opacity .2s,transform .15s}
+.cart-btn:hover{opacity:.9} .cart-btn:active{transform:scale(.97)}
+.cart-badge{position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;
+  background:#ef4444;color:#fff;font-size:11px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;display:none}
+
+/* HERO */
+.hero{text-align:center;padding:48px 20px 32px}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:900;color:#fff;margin-bottom:12px;line-height:1.15}
+.hero h1 span{background:linear-gradient(90deg,#1e82ff,#00c3ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{color:var(--muted);font-size:1.1rem}
+
+/* FILTERS */
+.filters{display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+  max-width:1280px;margin:0 auto 6px;padding:0 20px}
+.filter-cats{display:flex;flex-wrap:wrap;gap:8px;flex:1}
+.cat-btn{padding:7px 16px;border-radius:12px;border:1px solid var(--border);
+  background:rgba(255,255,255,.05);color:var(--muted);font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s}
+.cat-btn:hover{color:#fff}
+.cat-btn.active{background:linear-gradient(135deg,#1e82ff,#00c3ff);color:#fff;
+  border-color:transparent;box-shadow:0 3px 12px rgba(30,130,255,.4)}
+.sort-sel{padding:7px 14px;border-radius:12px;border:1px solid var(--border);
+  background:rgba(255,255,255,.06);color:var(--muted);font-size:13px;outline:none;cursor:pointer}
+.sort-sel option{background:#0d1b35}
+.results-count{color:var(--muted);font-size:13px;max-width:1280px;
+  margin:0 auto 20px;padding:0 20px}
+.results-count span{color:#4499ff;font-weight:700}
+
+/* PRODUCT GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:20px;max-width:1280px;margin:0 auto;padding:0 20px 48px;position:relative;z-index:1}
+
+/* PRODUCT CARD */
+.card{border-radius:20px;overflow:hidden;display:flex;flex-direction:column;
+  background:rgba(10,15,35,.75);border:1px solid var(--border);
+  box-shadow:0 8px 32px rgba(0,0,0,.3);transition:transform .25s,box-shadow .25s;cursor:pointer}
+.card:hover{transform:translateY(-5px);box-shadow:0 16px 48px rgba(0,0,0,.45)}
+.card-img{position:relative;height:160px;display:flex;align-items:center;justify-content:center}
+.card-img .emoji{font-size:70px;animation:float 5s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}
+  50%{transform:translateY(-10px) rotate(3deg)}}
+.card:nth-child(2) .emoji{animation-delay:.4s}
+.card:nth-child(3) .emoji{animation-delay:.8s}
+.card:nth-child(4) .emoji{animation-delay:1.2s}
+.card:nth-child(5) .emoji{animation-delay:1.6s}
+.card:nth-child(6) .emoji{animation-delay:.2s}
+.card:nth-child(7) .emoji{animation-delay:.6s}
+.card:nth-child(8) .emoji{animation-delay:1s}
+.card:nth-child(9) .emoji{animation-delay:1.4s}
+
+.badge-label{position:absolute;top:12px;left:12px;padding:3px 9px;border-radius:8px;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.18);
+  color:#fff;font-size:11px;font-weight:700}
+.badge-disc{position:absolute;top:12px;right:12px;padding:3px 9px;border-radius:8px;
+  background:rgba(220,38,38,.88);color:#fff;font-size:11px;font-weight:700}
+.card-body{padding:16px;display:flex;flex-direction:column;flex:1}
+.card-cat{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.8px;color:#4499ff;margin-bottom:5px}
+.card-name{color:#fff;font-size:15px;font-weight:800;margin-bottom:5px;line-height:1.3}
+.card-desc{font-size:12px;color:var(--muted);line-height:1.6;flex:1;margin-bottom:10px}
+.stars{display:flex;gap:2px;align-items:center;margin-bottom:12px}
+.star{font-size:12px}.star.on{color:#fbbf24}.star.off{color:#334466}
+.star-count{font-size:11px;color:#445566;margin-left:4px}
+.price-row{display:flex;align-items:flex-end;gap:8px;margin-bottom:14px}
+.price-now{color:#fff;font-size:19px;font-weight:900}
+.price-orig{color:#445566;font-size:13px;text-decoration:line-through}
+.add-btn{width:100%;padding:11px;border-radius:12px;border:none;cursor:pointer;
+  color:#fff;font-size:13px;font-weight:700;
+  background:linear-gradient(135deg,#1e82ff,#00c3ff);
+  box-shadow:0 4px 14px rgba(30,130,255,.4);transition:all .25s}
+.add-btn:hover{opacity:.9} .add-btn:active{transform:scale(.98)}
+.add-btn.added{background:linear-gradient(135deg,#22c55e,#16a34a);
+  box-shadow:0 4px 14px rgba(34,197,94,.4)}
+
+/* EMPTY */
+.empty{grid-column:1/-1;text-align:center;padding:64px 20px;color:var(--muted)}
+.empty .e-icon{font-size:48px;margin-bottom:14px}
+.empty h3{color:#fff;font-size:18px;font-weight:700;margin-bottom:6px}
+
+/* PROMO BAR */
+.promo{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:center;
+  max-width:1280px;margin:0 auto 48px;padding:24px 30px;
+  background:rgba(30,130,255,.08);border:1px solid rgba(30,130,255,.2);
+  border-radius:20px;position:relative;z-index:1}
+.promo-item{display:flex;align-items:center;gap:12px}
+.promo-item .p-icon{font-size:24px}
+.promo-item .p-title{color:#fff;font-size:13px;font-weight:700}
+.promo-item .p-sub{color:var(--muted);font-size:12px}
+
+/* CART OVERLAY */
+#cartOverlay{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.6);
+  backdrop-filter:blur(4px);display:none;opacity:0;transition:opacity .25s}
+#cartOverlay.open{display:block;opacity:1}
+#cartDrawer{position:fixed;right:0;top:0;bottom:0;z-index:50;width:360px;max-width:100vw;
+  display:flex;flex-direction:column;
+  background:rgba(8,12,28,.98);border-left:1px solid var(--border);
+  box-shadow:-20px 0 60px rgba(0,0,0,.5);
+  transform:translateX(100%);transition:transform .3s cubic-bezier(.25,.8,.25,1)}
+#cartDrawer.open{transform:translateX(0)}
+.cart-head{display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid var(--border)}
+.cart-head h2{color:#fff;font-size:17px;font-weight:800}
+.cart-close{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;
+  line-height:1;transition:color .15s}
+.cart-close:hover{color:#fff}
+.cart-items{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.cart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;text-align:center;gap:8px}
+.cart-empty .ce-icon{font-size:48px}
+.cart-empty p{color:var(--muted);font-size:14px}
+.cart-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;
+  background:rgba(255,255,255,.04);border:1px solid var(--border);animation:slideIn .25s ease}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+.ci-thumb{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;font-size:24px;flex-shrink:0}
+.ci-info{flex:1;min-width:0}
+.ci-name{color:#fff;font-size:13px;font-weight:600;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.ci-price{color:#4499ff;font-size:12px;font-weight:700;margin-top:2px}
+.ci-qty{display:flex;align-items:center;gap:6px;margin-top:6px}
+.qty-btn{width:24px;height:24px;border-radius:7px;border:none;cursor:pointer;
+  font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center;
+  transition:background .15s}
+.qty-minus{background:rgba(255,255,255,.1);color:#fff}
+.qty-minus:hover{background:rgba(255,255,255,.2)}
+.qty-plus{background:rgba(30,130,255,.4);color:#fff}
+.qty-plus:hover{background:rgba(30,130,255,.6)}
+.qty-num{color:#fff;font-size:13px;font-weight:700;width:20px;text-align:center}
+.ci-del{background:none;border:none;cursor:pointer;color:#cc4444;font-size:12px;
+  margin-left:auto;flex-shrink:0;transition:color .15s}
+.ci-del:hover{color:#ef4444}
+
+/* CART FOOTER */
+.cart-foot{padding:18px 20px;border-top:1px solid var(--border)}
+.cf-row{display:flex;justify-content:space-between;margin-bottom:6px}
+.cf-label{color:var(--muted);font-size:14px}
+.cf-val{color:#fff;font-size:14px;font-weight:600}
+.cf-ship{color:#22c55e;font-size:14px;font-weight:600}
+.cf-divider{border:none;border-top:1px solid var(--border);margin:10px 0}
+.cf-total{display:flex;justify-content:space-between;margin-bottom:18px}
+.cf-total span:first-child{color:#fff;font-size:16px;font-weight:700}
+.cf-total span:last-child{color:#fff;font-size:20px;font-weight:900}
+.order-btn{width:100%;padding:14px;border-radius:14px;border:none;cursor:pointer;
+  color:#fff;font-size:15px;font-weight:800;
+  background:linear-gradient(135deg,#1e82ff,#00c3ff);
+  box-shadow:0 6px 24px rgba(30,130,255,.4);transition:all .2s}
+.order-btn:hover{opacity:.9} .order-btn:active{transform:scale(.98)}
+.clear-btn{width:100%;background:none;border:none;color:#445566;font-size:12px;
+  margin-top:10px;cursor:pointer;transition:color .15s}
+.clear-btn:hover{color:var(--muted)}
+
+/* SUCCESS OVERLAY */
+#successOverlay{position:absolute;inset:0;background:rgba(8,12,28,.97);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:32px;z-index:10}
+#successOverlay.show{display:flex}
+.success-icon{font-size:64px;margin-bottom:16px;animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(.5)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+#successOverlay h3{color:#fff;font-size:24px;font-weight:900;margin-bottom:8px}
+#successOverlay p{color:var(--muted);font-size:14px}
+
+/* TOAST */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  background:#22c55e;color:#fff;padding:10px 22px;border-radius:14px;
+  font-size:14px;font-weight:700;z-index:99;opacity:0;pointer-events:none;
+  transition:opacity .3s;white-space:nowrap}
+#toast.show{opacity:1}
+
+/* MOBILE STICKY CART BAR */
+#stickyBar{display:none;position:fixed;bottom:16px;left:12px;right:12px;z-index:25}
+#stickyBar.visible{display:block}
+.sticky-inner{display:flex;justify-content:space-between;align-items:center;
+  padding:14px 20px;border-radius:18px;color:#fff;font-size:14px;font-weight:700;
+  background:linear-gradient(135deg,#1e82ff,#00c3ff);
+  box-shadow:0 8px 32px rgba(30,130,255,.5);cursor:pointer;border:none;width:100%}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:99px}
+
+@media(max-width:600px){.search-wrap{display:none}.hero{padding:32px 16px 20px}}
+</style>
+</head>
+<body>
+<div class="glow-bg"></div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <span class="logo-name">NexGear</span>
+    <span class="logo-tag">Store</span>
+  </div>
+  <div class="search-wrap">
+    <span style="color:var(--muted)">🔍</span>
+    <input id="searchInput" type="text" placeholder="Search products..." oninput="renderProducts()"/>
+  </div>
+  <button class="cart-btn" onclick="openCart()">
+    🛒 Cart
+    <span class="cart-badge" id="cartBadge">0</span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Premium <span>Smart Devices</span></h1>
+  <p>Best deals on smartwatches, earbuds, tablets aur zyada</p>
+</div>
+
+<!-- FILTERS -->
+<div class="filters">
+  <div class="filter-cats" id="catBtns"></div>
+  <select class="sort-sel" id="sortSel" onchange="renderProducts()">
+    <option value="default">Sort: Default</option>
+    <option value="price-asc">Price: Low to High</option>
+    <option value="price-desc">Price: High to Low</option>
+    <option value="rating">Best Rated</option>
+  </select>
+</div>
+<div class="results-count"><span id="resultCount">0</span> products found</div>
+
+<!-- GRID -->
+<div class="grid" id="productGrid"></div>
+
+<!-- PROMO -->
+<div class="promo" style="margin-top:-20px">
+  <div class="promo-item"><span class="p-icon">🚚</span><div><div class="p-title">Free Delivery</div><div class="p-sub">₹499+ ke orders pe</div></div></div>
+  <div class="promo-item"><span class="p-icon">↩️</span><div><div class="p-title">7-Day Returns</div><div class="p-sub">No questions asked</div></div></div>
+  <div class="promo-item"><span class="p-icon">🔒</span><div><div class="p-title">Secure Payment</div><div class="p-sub">100% safe checkout</div></div></div>
+  <div class="promo-item"><span class="p-icon">⭐</span><div><div class="p-title">1 Year Warranty</div><div class="p-sub">Sabhi products pe</div></div></div>
+</div>
+
+<!-- CART OVERLAY + DRAWER -->
+<div id="cartOverlay" onclick="closeCart()"></div>
+<div id="cartDrawer">
+  <div id="successOverlay">
+    <div class="success-icon">🎉</div>
+    <h3>Order Placed!</h3>
+    <p>Aapka order receive ho gaya.<br>Jaldi deliver karenge!</p>
+  </div>
+  <div class="cart-head">
+    <h2 id="cartTitle">Your Cart</h2>
+    <button class="cart-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItemsEl"></div>
+  <div class="cart-foot" id="cartFoot" style="display:none">
+    <div class="cf-row"><span class="cf-label">Subtotal</span><span class="cf-val" id="cfSub">₹0</span></div>
+    <div class="cf-row"><span class="cf-label">Shipping</span><span class="cf-ship">FREE</span></div>
+    <hr class="cf-divider"/>
+    <div class="cf-total"><span>Total</span><span id="cfTotal">₹0</span></div>
+    <button class="order-btn" onclick="placeOrder()" id="orderBtn">Place Order</button>
+    <button class="clear-btn" onclick="clearCart()">Clear cart</button>
+  </div>
+</div>
+
+<!-- STICKY BAR (mobile) -->
+<div id="stickyBar">
+  <button class="sticky-inner" onclick="openCart()">
+    <span id="sbLeft">🛒 0 items</span>
+    <span id="sbRight">View Cart →</span>
+  </button>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const PRODUCTS = [
+  { id:1, name:"NexWatch Pro X",    price:12999, originalPrice:17999, category:"Smart Watch", emoji:"⌚", badge:"Best Seller", color:"linear-gradient(135deg,#2563eb,#06b6d4)", description:"AMOLED display, health tracking, 7-day battery, water resistant IP68", rating:4.8, reviews:2341 },
+  { id:2, name:"NexBuds Ultra ANC", price:7999,  originalPrice:10999, category:"Earbuds",     emoji:"🎧", badge:"New",         color:"linear-gradient(135deg,#9333ea,#ec4899)", description:"40dB Active Noise Cancellation, 30hr battery, Spatial Audio support",  rating:4.7, reviews:1876 },
+  { id:3, name:"NexWatch Lite",     price:5499,  originalPrice:7499,  category:"Smart Watch", emoji:"⌚", badge:"",            color:"linear-gradient(135deg,#14b8a6,#34d399)", description:"Sleep tracking, SpO2 sensor, 14-day battery, always-on display",        rating:4.5, reviews:987  },
+  { id:4, name:"NexBuds Air",       price:3999,  originalPrice:5499,  category:"Earbuds",     emoji:"🎵", badge:"",            color:"linear-gradient(135deg,#f97316,#facc15)", description:"Open-ear design, 28hr total battery, IPX5 sweat resistant, quick charge",rating:4.4, reviews:654  },
+  { id:5, name:"NexBand Fitness",   price:2499,  originalPrice:3499,  category:"Fitness Band",emoji:"💪", badge:"Top Pick",    color:"linear-gradient(135deg,#ef4444,#ec4899)", description:"24/7 heart rate, GPS, stress monitor, 21-day battery life",            rating:4.6, reviews:3120 },
+  { id:6, name:"NexPods Pro",       price:9499,  originalPrice:12999, category:"Earbuds",     emoji:"🎶", badge:"",            color:"linear-gradient(135deg,#4f46e5,#8b5cf6)", description:"Hi-Fi lossless audio, dual driver, 6-mic array, wireless charging case",rating:4.9, reviews:540  },
+  { id:7, name:"NexWatch Sport",    price:8999,  originalPrice:11999, category:"Smart Watch", emoji:"🏃", badge:"",            color:"linear-gradient(135deg,#22c55e,#2dd4bf)", description:"Built-in GPS, 100+ workout modes, ruggedized, 10 ATM water resistant", rating:4.7, reviews:1230 },
+  { id:8, name:"NexScreen Tablet",  price:22999, originalPrice:29999, category:"Tablet",      emoji:"📱", badge:"New",         color:"linear-gradient(135deg,#475569,#2563eb)", description:'12" OLED display, Snapdragon 8 Gen 2, 12GB RAM, stylus support',      rating:4.6, reviews:421  },
+  { id:9, name:"NexLap Mini",       price:49999, originalPrice:59999, category:"Laptop",      emoji:"💻", badge:"Premium",     color:"linear-gradient(135deg,#374151,#64748b)", description:"Intel i7 13th Gen, 16GB RAM, 512GB SSD, 18hr battery, featherlight",   rating:4.8, reviews:318  },
+];
+
+const CATS = ["All","Smart Watch","Earbuds","Fitness Band","Tablet","Laptop"];
+let activeCategory = "All";
+let cart = []; // [{product, quantity}]
+
+// ─── CATEGORY BUTTONS ────────────────────────────────────────────────────────
+function buildCats(){
+  document.getElementById('catBtns').innerHTML = CATS.map(c=>
+    `<button class="cat-btn${c===activeCategory?' active':''}" onclick="setCategory('${c}')">${c}</button>`
+  ).join('');
+}
+function setCategory(c){ activeCategory=c; buildCats(); renderProducts(); }
+
+// ─── PRODUCTS ─────────────────────────────────────────────────────────────────
+function renderProducts(){
+  const q   = document.getElementById('searchInput').value.trim().toLowerCase();
+  const srt = document.getElementById('sortSel').value;
+  let list  = PRODUCTS.filter(p=>{
+    const mc = activeCategory==='All'||p.category===activeCategory;
+    const ms = !q||p.name.toLowerCase().includes(q)||p.category.toLowerCase().includes(q);
+    return mc&&ms;
+  });
+  if(srt==='price-asc')  list.sort((a,b)=>a.price-b.price);
+  if(srt==='price-desc') list.sort((a,b)=>b.price-a.price);
+  if(srt==='rating')     list.sort((a,b)=>b.rating-a.rating);
+
+  document.getElementById('resultCount').textContent = list.length;
+  const grid = document.getElementById('productGrid');
+  if(!list.length){
+    grid.innerHTML='<div class="empty"><div class="e-icon">🔍</div><h3>Koi product nahi mila</h3><p>Doosra keyword try karo</p></div>';
+    return;
+  }
+  grid.innerHTML = list.map((p,i)=>{
+    const disc = p.originalPrice ? Math.round((1-p.price/p.originalPrice)*100) : 0;
+    const stars = [1,2,3,4,5].map(s=>`<span class="star ${s<=Math.round(p.rating)?'on':'off'}">★</span>`).join('');
+    const inCart = cart.find(c=>c.product.id===p.id);
+    return`<div class="card" style="animation-delay:${i*0.06}s">
+      <div class="card-img" style="background:${p.color}">
+        <span class="emoji">${p.emoji}</span>
+        ${p.badge?`<span class="badge-label">${p.badge}</span>`:''}
+        ${disc>0?`<span class="badge-disc">-${disc}%</span>`:''}
+      </div>
+      <div class="card-body">
+        <div class="card-cat">${p.category}</div>
+        <div class="card-name">${p.name}</div>
+        <div class="card-desc">${p.description}</div>
+        <div class="stars">${stars}<span class="star-count">${p.rating} (${p.reviews.toLocaleString('en-IN')})</span></div>
+        <div class="price-row">
+          <span class="price-now">₹${p.price.toLocaleString('en-IN')}</span>
+          ${p.originalPrice?`<span class="price-orig">₹${p.originalPrice.toLocaleString('en-IN')}</span>`:''}
+        </div>
+        <button class="add-btn${inCart?' added':''}" onclick="addToCart(${p.id})" id="addbtn_${p.id}">
+          ${inCart?'✓ Added to Cart':'Add to Cart'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── CART ──────────────────────────────────────────────────────────────────────
+function addToCart(id){
+  const product = PRODUCTS.find(p=>p.id===id);
+  const existing = cart.find(c=>c.product.id===id);
+  if(existing) existing.quantity++;
+  else cart.push({product, quantity:1});
+  updateCartUI();
+  renderProducts();
+  showToast('Cart mein add ho gaya!');
+  // flash button
+  const btn=document.getElementById('addbtn_'+id);
+  if(btn){btn.classList.add('added');btn.textContent='✓ Added to Cart';}
+}
+
+function removeFromCart(id){
+  cart = cart.filter(c=>c.product.id!==id);
+  updateCartUI();
+  renderCartDrawer();
+  renderProducts();
+}
+
+function changeQty(id, delta){
+  const item = cart.find(c=>c.product.id===id);
+  if(!item) return;
+  item.quantity += delta;
+  if(item.quantity<=0){ removeFromCart(id); return; }
+  updateCartUI();
+  renderCartDrawer();
+}
+
+function clearCart(){
+  cart=[];
+  updateCartUI();
+  renderCartDrawer();
+  renderProducts();
+}
+
+function updateCartUI(){
+  const count = cart.reduce((s,i)=>s+i.quantity,0);
+  const total = cart.reduce((s,i)=>s+i.product.price*i.quantity,0);
+  // badge
+  const badge = document.getElementById('cartBadge');
+  if(count>0){badge.style.display='flex';badge.textContent=count;}
+  else badge.style.display='none';
+  // sticky bar
+  const bar = document.getElementById('stickyBar');
+  if(count>0){
+    bar.className='stickyBar visible';
+    document.getElementById('sbLeft').textContent=`🛒 ${count} items`;
+    document.getElementById('sbRight').textContent=`View Cart — ₹${total.toLocaleString('en-IN')} →`;
+  } else { bar.className='stickyBar'; }
+  // cart title
+  document.getElementById('cartTitle').innerHTML=`Your Cart${count>0?` <span style="color:#4499ff;font-size:14px;font-weight:400">(${count} items)</span>`:''}`;
+}
+
+function renderCartDrawer(){
+  const el = document.getElementById('cartItemsEl');
+  const foot = document.getElementById('cartFoot');
+  if(!cart.length){
+    el.innerHTML='<div class="cart-empty"><div class="ce-icon">🛒</div><p>Cart khali hai.<br>Koi product add karo.</p></div>';
+    foot.style.display='none'; return;
+  }
+  el.innerHTML = cart.map(i=>`
+    <div class="cart-item">
+      <div class="ci-thumb" style="background:${i.product.color}">${i.product.emoji}</div>
+      <div class="ci-info">
+        <div class="ci-name">${i.product.name}</div>
+        <div class="ci-price">₹${i.product.price.toLocaleString('en-IN')}</div>
+        <div class="ci-qty">
+          <button class="qty-btn qty-minus" onclick="changeQty(${i.product.id},-1)">−</button>
+          <span class="qty-num">${i.quantity}</span>
+          <button class="qty-btn qty-plus" onclick="changeQty(${i.product.id},1)">+</button>
+        </div>
+      </div>
+      <button class="ci-del" onclick="removeFromCart(${i.product.id})">Remove</button>
+    </div>`).join('');
+  const total = cart.reduce((s,i)=>s+i.product.price*i.quantity,0);
+  document.getElementById('cfSub').textContent='₹'+total.toLocaleString('en-IN');
+  document.getElementById('cfTotal').textContent='₹'+total.toLocaleString('en-IN');
+  document.getElementById('orderBtn').textContent=`Place Order — ₹${total.toLocaleString('en-IN')}`;
+  foot.style.display='block';
+}
+
+function openCart(){
+  renderCartDrawer();
+  document.getElementById('cartOverlay').className='open';
+  document.getElementById('cartDrawer').className='open';
+}
+function closeCart(){
+  document.getElementById('cartOverlay').className='';
+  document.getElementById('cartDrawer').className='';
+}
+
+function placeOrder(){
+  const suc = document.getElementById('successOverlay');
+  suc.className='show';
+  setTimeout(()=>{
+    clearCart();
+    suc.className='';
+    closeCart();
+  },2400);
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='show';
+  setTimeout(()=>t.className='',2000);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+buildCats();
+renderProducts();
+</script>
+</body>
+</html>
